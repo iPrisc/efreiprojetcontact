@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"os"
 	"strconv"
@@ -12,6 +13,25 @@ func main() {
 	reader := bufio.NewReader(os.Stdin)
 	contacts := make(map[int]map[string]string)
 	id := 0
+
+	ajouter := flag.Bool("ajouter", false, "Ajouter un contact")
+	nom := flag.String("nom", "", "Nom du contact")
+	email := flag.String("email", "", "Email du contact")
+	flag.Parse()
+
+	if *ajouter {
+		if *nom == "" || *email == "" {
+			fmt.Println("Erreur: flags incorrects.")
+			return
+		}
+
+		contacts[id] = map[string]string{
+			"nom":   *nom,
+			"email": *email,
+		}
+		fmt.Printf("Contact ajoute ! ID: %v, Nom: %v, Email: %v\n", id, *nom, *email)
+		return
+	}
 
 	for {
 		fmt.Println("\nDifferentes actions:")
@@ -133,7 +153,7 @@ func mettreAJourContact(reader *bufio.Reader, contacts map[int]map[string]string
 		}
 
 		contacts[id] = contact
-		fmt.Printf("Contact mis à jour ! ID: %v, Nom: %v, Email: %v\n", id, contact["nom"], contact["email"])
+		fmt.Printf("Contact mis a jour ! ID: %v, Nom: %v, Email: %v\n", id, contact["nom"], contact["email"])
 	} else {
 		fmt.Println("ID inexistant")
 	}
