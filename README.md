@@ -1,4 +1,4 @@
-# Projet Efrei contacts
+# Projet Efrei Contact
 
 Programme en Go (1.25.1) pour gérer une liste de contacts.
 
