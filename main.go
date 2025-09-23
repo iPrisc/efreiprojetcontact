@@ -15,6 +15,14 @@ type Contact struct {
 	Email string
 }
 
+func NewContact(id int, nom string, email string) *Contact {
+	return &Contact{
+		ID:    id,
+		Nom:   nom,
+		Email: email,
+	}
+}
+
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 	contacts := make(map[int]*Contact)
@@ -31,11 +39,10 @@ func main() {
 			return
 		}
 
-		contacts[id] = &Contact{
-			ID:    id,
-			Nom:   *nom,
-			Email: *email,
-		}
+		c := NewContact(id, *nom, *email)
+
+		contacts[id] = c
+
 		fmt.Printf("Contact ajoute ! ID: %v, Nom: %v, Email: %v\n", id, *nom, *email)
 		id++
 		return
