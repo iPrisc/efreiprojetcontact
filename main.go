@@ -9,9 +9,15 @@ import (
 	"strings"
 )
 
+type Contact struct {
+	ID    int
+	Nom   string
+	Email string
+}
+
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-	contacts := make(map[int]map[string]string)
+	contacts := make(map[int]*Contact)
 	id := 0
 
 	ajouter := flag.Bool("ajouter", false, "Ajouter un contact")
@@ -25,11 +31,13 @@ func main() {
 			return
 		}
 
-		contacts[id] = map[string]string{
-			"nom":   *nom,
-			"email": *email,
+		contacts[id] = &Contact{
+			ID:    id,
+			Nom:   *nom,
+			Email: *email,
 		}
 		fmt.Printf("Contact ajoute ! ID: %v, Nom: %v, Email: %v\n", id, *nom, *email)
+		id++
 		return
 	}
 
@@ -47,7 +55,11 @@ func main() {
 
 		switch input {
 		case "1":
-			id = ajouterContact(reader, contacts, id)
+			c := &Contact{}
+			c.ajouterContact(reader)
+			contacts[id] = c
+			fmt.Printf("Contact ajoute ! Id: %v, Nom: %v, Email: %v\n", id, c.Nom, c.Email)
+			id++
 		case "2":
 			afficherContacts(contacts)
 		case "3":
@@ -63,24 +75,17 @@ func main() {
 	}
 }
 
-func ajouterContact(reader *bufio.Reader, contacts map[int]map[string]string, id int) int {
+func (c *Contact) ajouterContact(reader *bufio.Reader) {
 	fmt.Print("Nom: ")
 	nom, _ := reader.ReadString('\n')
-	nom = strings.TrimSpace(nom)
+	c.Nom = strings.TrimSpace(nom)
 
 	fmt.Print("Mail: ")
 	email, _ := reader.ReadString('\n')
-	email = strings.TrimSpace(email)
-
-	contacts[id] = map[string]string{
-		"nom":   nom,
-		"email": email,
-	}
-	fmt.Printf("Contact ajoute ! Id: %v, Nom: %v, Email: %v\n", id, nom, email)
-	return id + 1
+	c.Email = strings.TrimSpace(email)
 }
 
-func afficherContacts(contacts map[int]map[string]string) {
+func afficherContacts(contacts map[int]*Contact) {
 	if len(contacts) == 0 {
 		fmt.Println("Aucun contact")
 		return
@@ -88,17 +93,17 @@ func afficherContacts(contacts map[int]map[string]string) {
 
 	fmt.Println("\nListe des contacts :")
 	for id, c := range contacts {
-		fmt.Printf("ID: %v, Nom: %v, Email: %v\n", id, c["nom"], c["email"])
+		fmt.Printf("ID: %v, Nom: %v, Email: %v\n", id, c.Nom, c.Email)
 	}
 }
 
-func supprimerContact(reader *bufio.Reader, contacts map[int]map[string]string) {
+func supprimerContact(reader *bufio.Reader, contacts map[int]*Contact) {
 	if len(contacts) == 0 {
-		fmt.Println("Aucun contact a supprimer")
+		fmt.Println("Aucun contact à supprimer")
 		return
 	}
 
-	fmt.Print("ID a supprimer: ")
+	fmt.Print("ID à supprimer: ")
 	idsup, _ := reader.ReadString('\n')
 	idsup = strings.TrimSpace(idsup)
 
@@ -108,23 +113,21 @@ func supprimerContact(reader *bufio.Reader, contacts map[int]map[string]string) 
 		return
 	}
 
-	_, res := contacts[id]
-	if res {
+	if _, exists := contacts[id]; exists {
 		delete(contacts, id)
 		fmt.Println("Contact supprime !")
 	} else {
 		fmt.Println("ID inexistant")
 	}
-
 }
 
-func mettreAJourContact(reader *bufio.Reader, contacts map[int]map[string]string) {
+func mettreAJourContact(reader *bufio.Reader, contacts map[int]*Contact) {
 	if len(contacts) == 0 {
-		fmt.Println("Aucun contact a mettre a jour")
+		fmt.Println("Aucun contact à mettre à jour")
 		return
 	}
 
-	fmt.Print("ID a mettre à jour: ")
+	fmt.Print("ID à mettre à jour: ")
 	input, _ := reader.ReadString('\n')
 	input = strings.TrimSpace(input)
 
@@ -134,27 +137,27 @@ func mettreAJourContact(reader *bufio.Reader, contacts map[int]map[string]string
 		return
 	}
 
-	contact, res := contacts[id]
-	if res {
-		fmt.Printf("Nom actuel: %s\n", contact["nom"])
-		fmt.Print("Nouveau nom: ")
-		nom, _ := reader.ReadString('\n')
-		nom = strings.TrimSpace(nom)
-		if nom != "" {
-			contact["nom"] = nom
-		}
-
-		fmt.Printf("Email actuel: %s\n", contact["email"])
-		fmt.Print("Nouvel email: ")
-		email, _ := reader.ReadString('\n')
-		email = strings.TrimSpace(email)
-		if email != "" {
-			contact["email"] = email
-		}
-
-		contacts[id] = contact
-		fmt.Printf("Contact mis a jour ! ID: %v, Nom: %v, Email: %v\n", id, contact["nom"], contact["email"])
-	} else {
+	c, exists := contacts[id]
+	if !exists {
 		fmt.Println("ID inexistant")
+		return
 	}
+
+	fmt.Printf("Nom actuel: %s\n", c.Nom)
+	fmt.Print("Nouveau nom: ")
+	nom, _ := reader.ReadString('\n')
+	nom = strings.TrimSpace(nom)
+	if nom != "" {
+		c.Nom = nom
+	}
+
+	fmt.Printf("Email actuel: %s\n", c.Email)
+	fmt.Print("Nouvel email: ")
+	email, _ := reader.ReadString('\n')
+	email = strings.TrimSpace(email)
+	if email != "" {
+		c.Email = email
+	}
+
+	fmt.Printf("Contact mis a jour ! ID: %v, Nom: %v, Email: %v\n", id, c.Nom, c.Email)
 }
